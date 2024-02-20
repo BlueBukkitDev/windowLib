@@ -79,7 +79,7 @@ public class Window extends Frame {
 	private void setupDisplay(Graphics g) {
 		Transform contentsT = new Transform(sideMargin, endMargin);
 		Dimension d = new Dimension(getWidth()-(sideMargin*2), getHeight()-(endMargin*2));
-		TextArea contents = new TextArea("contents", contentsT, d.width, d.height, 20, true, contentsPattern(contentsT, d.width, d.height)) {
+		TextArea contents = new TextArea("contents", contentsT, d.width, d.height, true, contentsPattern(contentsT, d.width, d.height)) {
 			@Override
 			public void run() {
 				this.selected = true;
