@@ -30,10 +30,23 @@ public class BitLine {
 
 	public BitLine(Transform transform, Graphics g) {
 		this.transform = transform;
-		System.out.println("Transform: "+transform.getX()+", "+transform.getY());
 		this.index = this.x;
 		
 		this.g = g;
+	}
+	
+	public int getSubWidth(int index) {
+		int width = 0;
+		if(index > bits.size()) {
+			index = bits.size();
+		}
+		if(index < 0) {
+			index = 0;
+		}
+		for(int i = 0; i < index; i++) {
+			width += g.getFontMetrics(bits.get(i).getF()).stringWidth(bits.get(i).getS());
+		}
+		return width;
 	}
 
 	public void addBit(TextBit bit) {
@@ -65,8 +78,6 @@ public class BitLine {
 	 *Renders each textbit sequentially, iterating to the right by the width of the bit.
 	 **/
 	public void render(Graphics g) {
-		//System.out.println("Transform: "+transform.getX()+", "+transform.getY());//After a while, things stop making sense. Issue at hand is that if we print out transform, it shows 20 - the transform of the
-		//text area, not of this bitline.
 		this.index = this.x;
 		for (TextBit each : this.bits) {
 			g.setColor(each.getC());

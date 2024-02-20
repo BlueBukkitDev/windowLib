@@ -82,8 +82,7 @@ public class TextArea extends UIObject {
 		if (this.timer <= this.blinkSpeed) {
 			SP p = indexToPosition(cursorRow, cursorCol);
 			g.setColor(Color.LIGHT_GRAY);
-			//g.fillRect(this.transform.getX() + g.getFontMetrics().stringWidth(this.displayText.substring(0, this.text1.length())) + this.indent - 1, this.transform.getY() + this.vertIndent, 2, this.height - this.vertIndent * 2);
-			g.fillRect(transform.getX()+p.getX(), transform.getY()+p.getY(), 2, 20);
+			g.fillRect(transform.getX()+paddingLeft+p.getX(), transform.getY()+p.getY()-20, 2, 20);
 		}
 		//this.lineHeight = g.getFontMetrics().getHeight();
 		this.timer++;
@@ -120,6 +119,9 @@ public class TextArea extends UIObject {
 		return 0;//Not sure I should return 0. May cause unexpected behavior.
 	}
 	
+	/**
+	 *Produces a position to be used by the blinker, given row and column. 
+	 **/
 	private SP indexToPosition(int row, int col) {
 		int x, y;
 		BitLine line;
@@ -135,14 +137,7 @@ public class TextArea extends UIObject {
 			return new SP(0, 0);
 		}
 		
-		if(col > line.getBits().size()-1) {
-			if(line.getBits().size() == 0) {
-				bit = null;
-			}else bit = line.getBits().get(line.getBits().size()-1);
-		}else {
-			bit = line.getBits().get(col);
-		}
-		x = (bit == null ? 0 : bit.getX());
+		x = line.getSubWidth(col);
 		return new SP(x, y);
 	}
 
@@ -152,7 +147,7 @@ public class TextArea extends UIObject {
 		line.setY(paddingTop);
 		byte b;
 		int i;
-		for (i = bits.size(), b = 0; b < i;) {
+		for (i = bits.size(), b = 0; b < i;) {//What's this?
 			TextBit each = bits.get(b);
 			line.addBit(each);
 			b++;
@@ -204,6 +199,9 @@ public class TextArea extends UIObject {
 	public boolean onClick(int button, Point p) {
 		if (this.getBounds().contains(p)) {
 			this.selected = true;
+			if(lines.size() == 0) {
+				addLine(new ArrayList<TextBit>());
+			}
 			run();
 			return true;
 		}

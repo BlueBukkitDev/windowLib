@@ -22,6 +22,9 @@ public class MouseManager implements MouseListener, MouseMotionListener, MouseWh
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
+		if(Main.getWindow() == null) {
+			return;
+		}
 		for(UIObject each:Main.getWindow().getRegistry().getObjects()) {
 			each.onMouseMove(e.getPoint());
 		}
