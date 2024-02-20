@@ -10,6 +10,14 @@ public class Main {
 		engine.start();
 	}
 	
+	public static Window getWindow() {
+		return window;
+	}
+	
+	public static Engine getEngine() {
+		return engine;
+	}
+	
 	public static void stop() {
 		window.dispose();
 		engine.stop();

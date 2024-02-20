@@ -6,10 +6,13 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 
+import windowAPI.test.Main;
 import windowAPI.ui.geometry.Transform;
+import windowAPI.ui.gfx.BitFormat;
 import windowAPI.ui.gfx.Pattern;
 
 public class TextArea extends UIObject {
@@ -30,6 +33,8 @@ public class TextArea extends UIObject {
 	private List<BitLine> lines;
 	private Graphics g;
 	private Pattern pattern;
+	
+	private int cursorCol = 0, cursorRow = 0;
 
 	public TextArea(String id, Transform transform, int width, int height, int cushion, boolean editable, Pattern pattern) {
 		super(id, transform, width, height, pattern);
@@ -58,114 +63,56 @@ public class TextArea extends UIObject {
 			} catch (ConcurrentModificationException e) {
 				e.printStackTrace();
 			}
-			//if(editable) {
-			//	renderBlinker();
-			//}
+			if(selected && editable) {
+				renderBlinker();
+			}
 		}
 	}
 	
-	/*private void renderBlinker() {
-		if (this.selected) {
-			if (this.timer >= 2 * this.blinkSpeed)
-				this.timer = 0;
-			if (this.timer <= this.blinkSpeed) {
-				g.setColor(Color.BLACK);
-				g.fillRect(this.transform.getX() + g.getFontMetrics().stringWidth(this.displayText.substring(0, this.text1.length())) + this.indent - 1,
-						this.transform.getY() + this.vertIndent, 2, this.height - this.vertIndent * 2);
-			}
+	private void renderBlinker() {
+		if (this.timer >= 2 * this.blinkSpeed)
+			this.timer = 0;
+		if (this.timer <= this.blinkSpeed) {
+			g.setColor(Color.LIGHT_GRAY);
+			//g.fillRect(this.transform.getX() + g.getFontMetrics().stringWidth(this.displayText.substring(0, this.text1.length())) + this.indent - 1, this.transform.getY() + this.vertIndent, 2, this.height - this.vertIndent * 2);
+			g.fillRect(transform.getX()+5, transform.getY()+5, 2, 20);
 		}
-		this.lineHeight = g.getFontMetrics().getHeight();
+		//this.lineHeight = g.getFontMetrics().getHeight();
 		this.timer++;
-	}*/
+	}
 
 	public void logInfo(String message, Font bold, Font plain) {
-		addLine(new TextBit[] { new TextBit(Color.BLUE, bold, "INFO: ", null, null),
-				new TextBit(Color.BLACK, plain, message, null, null) });
+		addLine(Arrays.asList(new TextBit("INFO: ", new BitFormat(Color.BLUE, Font.BOLD)), new TextBit(message, new BitFormat())));
 	}
 
 	public void logError(String message, Font bold, Font plain) {
-		addLine(new TextBit[] { new TextBit(Color.RED, bold, "ERROR: ", null, null),
-				new TextBit(Color.RED, plain, message, null, null) });
+		addLine(Arrays.asList(new TextBit("ERROR: ", new BitFormat(Color.RED, Font.BOLD)), new TextBit(message, new BitFormat())));
 	}
 
 	public void logIncoming(String message, Font plain, Font italic, Font bold) {
-		if (message.contains("§")) {/////////////////////// Guess it was �, idk
-			TextBit[] bits = getBits(message, plain, italic, bold);
+		if (message.contains("§")) {
+			List<TextBit> bits = getBits(message, plain, italic, bold);
 			if (this != null && bits != null)
 				addLine(bits);
 		} else if (this != null){
-			addLine(new TextBit[] { new TextBit(Color.BLACK, plain, message, null, null) });
+			addLine(Arrays.asList(new TextBit(message, new BitFormat())));
 		}
 	}
 
-	private TextBit[] getBits(String message, Font plain, Font italic, Font bold) {
-		String[] parts = message.split("§");//////////////////////////// Prolly also is �
-		TextBit[] bits = new TextBit[parts.length];
-		for (int i = 1; i < parts.length; i++) {
-			TextBit bit;
-			if (parts[i].startsWith("a")) {
-				bit = new TextBit(new Color(0, 255, 0), plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("b")) {
-				bit = new TextBit(Color.CYAN, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("c")) {
-				bit = new TextBit(Color.RED, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("d")) {
-				bit = new TextBit(Color.PINK, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("e")) {
-				bit = new TextBit(Color.YELLOW, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("f")) {
-				bit = new TextBit(Color.WHITE, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("0")) {
-				bit = new TextBit(Color.BLACK, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("1")) {
-				bit = new TextBit(Color.BLUE, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("2")) {
-				bit = new TextBit(new Color(0, 80, 0), plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("3")) {
-				bit = new TextBit(new Color(0, 80, 80), plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("4")) {
-				bit = new TextBit(new Color(80, 0, 0), plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("5")) {
-				bit = new TextBit(new Color(80, 0, 80), plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("6")) {
-				bit = new TextBit(new Color(80, 0, 80), plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("7")) {
-				bit = new TextBit(Color.GRAY, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("8")) {
-				bit = new TextBit(Color.DARK_GRAY, plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("9")) {
-				bit = new TextBit(new Color(80, 0, 200), plain, parts[i].substring(1), null, null);
-			} else if (parts[i].startsWith("l")) {
-				if (i > 1) {
-					bit = new TextBit(bits[i - 1].getC(), bold, parts[i].substring(1), null, null);
-				} else {
-					bit = new TextBit(Color.BLACK, bold, parts[i].substring(1), null, null);
-				}
-			} else if (parts[i].startsWith("i")) {
-				if (i > 1) {
-					bit = new TextBit(bits[i - 1].getC(), italic, parts[i].substring(1), null, null);
-				} else {
-					bit = new TextBit(Color.BLACK, italic, parts[i].substring(1), null, null);
-				}
-			} else if (parts[i].startsWith("r")) {
-				bit = new TextBit(Color.BLACK, plain, parts[i].substring(1), null, null);
-			} else if (i > 1) {
-				bit = new TextBit(bits[i - 1].getC(), bits[i - 1].getF(), parts[i], null, null);
-			} else {
-				bit = new TextBit(Color.BLACK, plain, "�" + parts[i], null, null);
-			}
-			bits[i] = bit;
+	private List<TextBit> getBits(String message, Font plain, Font italic, Font bold) {
+		List<TextBit> bits = new ArrayList<TextBit>();
+		for(BitLine each:lines) {
+			bits.addAll(each.getBits());
 		}
 		return bits;
 	}
 
-	public void addLine(TextBit... bits) {
+	public void addLine(List<TextBit> bits) {
 		BitLine line = new BitLine(new Transform(0, 0), g, this.width - this.cushion * 2);
 		byte b;
 		int i;
-		TextBit[] arrayOfTextBit;
-		for (i = (arrayOfTextBit = bits).length, b = 0; b < i;) {
-			TextBit each = arrayOfTextBit[b];
+		for (i = bits.size(), b = 0; b < i;) {
+			TextBit each = bits.get(b);
 			line.addBit(each);
 			b++;
 		}
@@ -179,27 +126,38 @@ public class TextArea extends UIObject {
 	}
 
 	public void update() {
-
+		if(hovering) {
+			if(!editable) {
+				return;
+			}
+			Main.getWindow().setCursorForText();
+		}
+		Main.getWindow().setCursorForNormal();
 	}
 	
 	@Override
 	public void onMouseMove(Point p) {
 		if (this.getBounds().contains(p)) {
 			this.hovering = true;
+			if(editable) Main.getWindow().setCursorForText();
 		} else {
 			this.hovering = false;
+			if(editable) Main.getWindow().setCursorForNormal();
 		}
 	}
 
 	public void run() {
+		
 	}
 
 	@Override
 	public boolean onClick(int button, Point p) {
 		if (this.getBounds().contains(p)) {
+			this.selected = true;
 			run();
 			return true;
 		}
+		this.selected = false;
 		return false;
 	}
 	
@@ -207,55 +165,42 @@ public class TextArea extends UIObject {
 	public void onScroll(int amount) {
 		
 	}
-	
 	public String getId() {
 		return this.id;
 	}
-
 	public void setId(String id) {
 		this.id = id;
 	}
-
 	public int getX() {
 		return this.transform.getX();
 	}
-
 	public int getY() {
 		return this.transform.getY();
 	}
-
 	public int getWidth() {
 		return this.width;
 	}
-
 	public void setWidth(int width) {
 		this.width = width;
 	}
-
 	public int getHeight() {
 		return this.height;
 	}
-
 	public void setHeight(int height) {
 		this.height = height;
 	}
-
 	public boolean isHovering() {
 		return this.hovering;
 	}
-
 	public void setHovering(boolean hovering) {
 		this.hovering = hovering;
 	}
-
 	public List<BitLine> getLines() {
 		return this.lines;
 	}
-
 	public Graphics getGraphics() {
 		return this.g;
 	}
-
 	public void deactivate() {
 		this.isActive = false;
 	}
@@ -270,26 +215,40 @@ public class TextArea extends UIObject {
 	}
 
 	@Override
-	public void onType(KeyEvent paramKeyEvent) {
-		// TODO Auto-generated method stub
-
+	public void onType(KeyEvent e) {
+		if(e.getKeyChar() == KeyEvent.VK_ENTER) {
+			lines.add(new BitLine(transform, g, width-50));
+			return;
+		}
+		if(e.getKeyChar() == KeyEvent.VK_BACK_SPACE) {//Need to do backspaces, verify newlines, and work on arrow keys for navigation. 
+			//Also add padding, use index to insert text, and add bitformat settings to this area.///////////////////////////////////////////////////////////////////
+			
+		}
+		if(lines.size() == 0) {
+			lines.add(new BitLine(transform, g, width-50));
+			lines.get(0).addBit(new TextBit(e.getKeyChar()+"", new BitFormat(Color.LIGHT_GRAY)));
+		}else {
+			lines.get(0).addBit(new TextBit(e.getKeyChar()+"", new BitFormat(Color.LIGHT_GRAY)));
+		}
+		/*if(lines.get(lines.size()).getWidth() >= width-50) {
+			System.out.println("Too long");
+		}else {
+			lines.get(lines.size()).addBit(new TextBit(paramKeyEvent.getKeyChar()+"", new BitFormat()));
+		}*/
 	}
 
 	@Override
 	public void onKeyPressed(KeyEvent paramKeyEvent) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public boolean onMouseDown(int paramInt, Point paramPoint) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean onMouseUp(int paramInt, Point paramPoint) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
@@ -299,7 +258,6 @@ public class TextArea extends UIObject {
 
 	@Override
 	public void onKeyReleased(KeyEvent paramKeyEvent) {
-		// TODO Auto-generated method stub
 		
 	}
 }

@@ -43,6 +43,10 @@ public class Engine implements Runnable {
 		}
 	}
 	
+	public void update() {
+		window.getRegistry().update();
+	}
+	
 	/**
 	 *
 	 **/
@@ -66,8 +70,8 @@ public class Engine implements Runnable {
 	        window.getRegistry().render(g);
 
 	    } finally {
-	        g.dispose();
-	        bs.show();
+	    	g.dispose();
+	    	bs.show();
 	    }
 	}
 	

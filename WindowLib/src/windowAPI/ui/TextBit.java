@@ -4,8 +4,8 @@ package windowAPI.ui;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.List;
+
+import windowAPI.ui.gfx.BitFormat;
 
 public class TextBit {
 	
@@ -25,26 +25,12 @@ public class TextBit {
 
 	protected Runnable click;
 
-	protected boolean isContainer;
-
-	public TextBit(Color c, Font f, String s, Runnable hover, Runnable click) {
-		this.c = c;
-		this.f = f;
+	public TextBit(String s, BitFormat format) {
+		this.c = format.getColor();
+		this.f = format.getFont();
 		this.s = s;
-		this.hover = hover;
-		this.click = click;
-		this.isContainer = false;
-	}
-	
-	public int getWidth(Graphics g) {
-		int w = 0;
-		if(isContainer) {
-			for(TextBit each:bits) {
-				w += each.getWidth(g);
-			}
-		}
-		w += g.getFontMetrics().stringWidth(s);
-		return w;
+		this.hover = format.getHover();
+		this.click = format.getClick();
 	}
 
 	public void setX(int x) {
@@ -61,11 +47,6 @@ public class TextBit {
 
 	public int getY() {
 		return this.y;
-	}
-
-	public TextBit(TextBit... bits) {
-		this.bits = bits;
-		this.isContainer = true;
 	}
 
 	public void onMouseHover() {
@@ -117,29 +98,10 @@ public class TextBit {
 	public void setClick(Runnable click) {
 		this.click = click;
 	}
-
-	public TextBit[] getBits() {
-		List<TextBit> bitsList = new ArrayList<>();
-		byte b;
-		int i;
-		TextBit[] arrayOfTextBit;
-		for (i = (arrayOfTextBit = this.bits).length, b = 0; b < i;) {
-			TextBit each = arrayOfTextBit[b];
-			byte b1;
-			int j;
-			TextBit[] arrayOfTextBit1;
-			for (j = (arrayOfTextBit1 = each.getBits()).length, b1 = 0; b1 < j;) {
-				TextBit every = arrayOfTextBit1[b1];
-				bitsList.add(every);
-				b1++;
-			}
-			b++;
-		}
-		return (TextBit[]) bitsList.toArray();
-	}
-
-	public boolean isContainer() {
-		return this.isContainer;
+	
+	public int getWidth(Graphics g) {
+		g.setFont(f);
+		return g.getFontMetrics().stringWidth(s);
 	}
 
 	public int getHeight(Graphics g) {

@@ -50,27 +50,17 @@ public class BitLine {
 			}
 		}
 	}
+	
+	public List<TextBit> getBits() {
+		return bits;
+	}
 
 	public void render(Graphics g) {
 		this.index = this.x;
 		for (TextBit each : this.bits) {
-			if (each.isContainer()) {
-				byte b;
-				int i;
-				TextBit[] arrayOfTextBit;
-				for (i = (arrayOfTextBit = each.getBits()).length, b = 0; b < i;) {
-					TextBit every = arrayOfTextBit[b];
-					g.setColor(every.getC());
-					g.setFont(every.getF());
-					g.drawString(every.getS(), this.index+transform.getX(), this.y+transform.getY());
-					this.index += g.getFontMetrics().stringWidth(every.getS());
-					b++;
-				}
-				continue;
-			}
 			g.setColor(each.getC());
 			g.setFont(each.getF());
-			g.drawString(each.getS(), this.index+transform.getX(), this.y+transform.getY());
+			g.drawString(each.getS(), this.index+transform.getX(), this.y+transform.getY()+this.height);
 			this.index += g.getFontMetrics().stringWidth(each.getS());
 		}
 	}
