@@ -1,6 +1,7 @@
 package windowAPI.ui;
 
 
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +28,25 @@ public class BitLine {
 	private int width;
 
 	private int height;
+	
+	private int maxWidth;
+	private boolean maxWidthSet = false;
+	private boolean wrap = false;
 
 	public BitLine(Transform transform, Graphics g) {
 		this.transform = transform;
 		this.index = this.x;
 		
 		this.g = g;
+	}
+	
+	public void setMaxWidth(int width) {
+		maxWidth = width;
+		maxWidthSet = true;
+	}
+	
+	public void setWrap() {
+		wrap = true;
 	}
 	
 	public int getSubWidth(int index) {
@@ -49,20 +63,21 @@ public class BitLine {
 		return width;
 	}
 
-	public void addBit(TextBit bit) {
-		if (bit != null && bit.getS().length() > 0) {
-			this.bits.add(bit);
-			int i = 0;
-			for (TextBit each : this.bits) {
-				int h = each.getHeight(g);
-				if (h > i)
-					i = h;
-			}
-			if (i > this.height)
-				this.height = i;
-			for(TextBit each:bits) {
-				width += g.getFontMetrics().stringWidth(each.s);
-			}
+	public void addBit(TextBit bit, int index) {
+		if (bit == null || bit.getS().length() <= 0) {
+			return;
+		}
+		this.bits.add(index, bit);
+		int i = 0;
+		for (TextBit each : this.bits) {
+			int h = each.getHeight(g);
+			if (h > i)
+				i = h;
+		}
+		if (i > this.height)
+			this.height = i;
+		for(TextBit each:bits) {
+			width += g.getFontMetrics().stringWidth(each.s);
 		}
 	}
 	
@@ -112,7 +127,13 @@ public class BitLine {
 		this.y = y;
 	}
 
+	/**
+	 *Returns 0 until a textbit has been added.
+	 **/
 	public int getHeight() {
+		if(this.height == 0) {
+			return g.getFontMetrics(new Font("Helvetica", Font.PLAIN, 16)).getHeight();
+		}
 		return this.height;
 	}
 }

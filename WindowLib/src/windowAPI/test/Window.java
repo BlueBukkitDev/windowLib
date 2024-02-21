@@ -8,10 +8,8 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 
 import windowAPI.ui.TextArea;
-import windowAPI.ui.TextBit;
 import windowAPI.ui.UIObjectRegistry;
 import windowAPI.ui.geometry.SP;
 import windowAPI.ui.geometry.Transform;

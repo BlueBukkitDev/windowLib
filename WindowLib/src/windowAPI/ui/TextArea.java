@@ -21,8 +21,8 @@ public class TextArea extends UIObject {
 	private int width;
 	private int height;
 	private int lastLineY = 0;
-	private int timer = 0; 
 	private int blinkSpeed = 16;
+	private int timer = 0; 
 	private int cursorCol = 0;
 	private int cursorRow = 0;
 	private int paddingLeft;
@@ -34,6 +34,7 @@ public class TextArea extends UIObject {
 	private boolean hovering = false;
 	private boolean editable;
 
+	private Color blinkerColor = Color.LIGHT_GRAY;
 	private Point clickedPos = new Point(0, 0);
 	private List<BitLine> lines;
 	private Graphics g;
@@ -81,10 +82,11 @@ public class TextArea extends UIObject {
 			this.timer = 0;
 		if (this.timer <= this.blinkSpeed) {
 			SP p = indexToPosition(cursorRow, cursorCol);
-			g.setColor(Color.LIGHT_GRAY);
-			g.fillRect(transform.getX()+paddingLeft+p.getX(), transform.getY()+p.getY()-20, 2, 20);
+			if(p != null) {
+				g.setColor(blinkerColor);
+				g.fillRect(transform.getX()+paddingLeft+p.getX(), transform.getY()+p.getY()-20, 2, 20);
+			}
 		}
-		//this.lineHeight = g.getFontMetrics().getHeight();
 		this.timer++;
 	}
 	
@@ -125,7 +127,6 @@ public class TextArea extends UIObject {
 	private SP indexToPosition(int row, int col) {
 		int x, y;
 		BitLine line;
-		TextBit bit;
 		if(lines.size() != 0) {
 			if(row > lines.size()) {
 				line = lines.get(lines.size());
@@ -134,31 +135,37 @@ public class TextArea extends UIObject {
 			}
 			y = line.getY();
 		}else {
-			return new SP(0, 0);
+			return null;
 		}
 		
 		x = line.getSubWidth(col);
 		return new SP(x, y);
 	}
+	
+	public void setBlinkerColor(Color c) {
+		this.blinkerColor = c;
+	}
 
-	public void addLine(List<TextBit> bits) {//I think this always adds a line to the end. We may need to insert a line, moving others down.
+	public void addLine(List<TextBit> bits) {
 		BitLine line = new BitLine(new Transform(0, 0), g);
-		line.setX(paddingLeft);
-		line.setY(paddingTop);
 		byte b;
 		int i;
-		for (i = bits.size(), b = 0; b < i;) {//What's this?
+		for (i = bits.size(), b = 0; b < i;) {
 			TextBit each = bits.get(b);
-			line.addBit(each);
+			line.addBit(each, i);
 			b++;
 		}
 		if(lastLineY == 0) {
-			lastLineY = paddingTop+line.getHeight();
+			lastLineY = paddingTop+line.getY()+lines.size()*line.getHeight();//this is the first line being added, so we can use it as our base. 
 		}
 		line.setY(this.lastLineY);
 		line.setX(this.transform.getX() + this.paddingLeft);
 		this.lastLineY += line.getHeight();
 		this.lines.add(line);
+	}
+	
+	public void removeLine(int index) {
+		lines.remove(index);
 	}
 
 	public void update() {
@@ -268,9 +275,9 @@ public class TextArea extends UIObject {
 			lines.add(new BitLine(transform, g));
 			rationalizeCursor();
 		}
-		handleNavigation(e);
 		if(e.getKeyChar() == KeyEvent.VK_ENTER) {
-			lines.add(new BitLine(transform, g));
+			addLine(new ArrayList<TextBit>());
+			cursorRow++;
 			rationalizeCursor();
 			return;
 		}
@@ -284,24 +291,13 @@ public class TextArea extends UIObject {
 			return;
 		}
 		
-		lines.get(0).addBit(new TextBit(e.getKeyChar()+"", new BitFormat(Color.LIGHT_GRAY)));
+		lines.get(cursorRow).addBit(new TextBit(e.getKeyChar()+"", new BitFormat(Color.LIGHT_GRAY)), cursorCol);
 		cursorCol++;
 		/*if(lines.get(lines.size()).getWidth() >= width-50) {
 			System.out.println("Too long");
 		}else {
 			lines.get(lines.size()).addBit(new TextBit(paramKeyEvent.getKeyChar()+"", new BitFormat()));
 		}*/
-	}
-	
-	private void handleNavigation(KeyEvent e) {
-		switch(e.getKeyChar()) {
-		case KeyEvent.VK_LEFT:cursorCol--;break;
-		case KeyEvent.VK_RIGHT:cursorCol++;break;
-		case KeyEvent.VK_UP:cursorRow--;break;
-		case KeyEvent.VK_DOWN:cursorRow++;break;
-		default:break;
-		}
-		rationalizeCursor();
 	}
 	
 	private void rationalizeCursor() {
@@ -319,8 +315,27 @@ public class TextArea extends UIObject {
 	}
 
 	@Override
-	public void onKeyPressed(KeyEvent paramKeyEvent) {
-
+	public void onKeyPressed(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+			cursorCol--;
+			rationalizeCursor();
+			return;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+			cursorCol++;
+			rationalizeCursor();
+			return;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_UP) {
+			cursorRow--;
+			rationalizeCursor();
+			return;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+			cursorRow++;
+			rationalizeCursor();
+			return;
+		}
 	}
 
 	@Override

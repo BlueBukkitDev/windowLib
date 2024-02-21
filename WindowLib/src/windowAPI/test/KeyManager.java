@@ -20,6 +20,10 @@ public class KeyManager implements KeyListener {
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			Main.stop();
 		}
+		for(UIObject each:Main.getWindow().getRegistry().getObjects()) {
+			each.onKeyPressed(e);
+		}
+		Main.getEngine().update();
 	}
 
 	@Override
