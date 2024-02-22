@@ -28,10 +28,11 @@ public class TextArea extends UIObject {
 	private int paddingLeft;
 	private int paddingRight;
 	private int paddingTop;
-	private int paddingBottom;
-
+	//private int paddingBottom;
+	
+	private boolean wrap;
 	private boolean isActive;
-	private boolean hovering = false;
+	private boolean hovering;
 	private boolean editable;
 
 	private Color blinkerColor = Color.LIGHT_GRAY;
@@ -53,7 +54,7 @@ public class TextArea extends UIObject {
 		this.paddingLeft = 25;
 		this.paddingRight = 15;
 		this.paddingTop = 30;
-		this.paddingBottom = 0;
+		//this.paddingBottom = 0;
 	}
 	
 	public void setGraphics(Graphics g) {
@@ -68,8 +69,8 @@ public class TextArea extends UIObject {
 				for (BitLine each : this.lines) {
 					each.render(g);
 				}
-			} catch (ConcurrentModificationException e) {
-				e.printStackTrace();
+			} catch (ConcurrentModificationException e) {//Not sure why but we get one here often
+				
 			}
 			if(selected && editable) {
 				renderBlinker();
@@ -139,7 +140,25 @@ public class TextArea extends UIObject {
 		}
 		
 		x = line.getSubWidth(col);
-		return new SP(x, y);
+		SP sp = new SP(x, y);
+		//sp = positionFromWrap(lines.indexOf(line), col);
+		
+		return sp;
+	}
+	
+	@SuppressWarnings("unused")
+	private SP positionFromWrap(int row, int col) {
+		BitLine line = lines.get(row);
+		int index = line.getX();
+		int wrap = 1;
+		for (TextBit each : line.getBits()) {
+			if(line.maxWidthSet && index > line.maxWidth) {
+				wrap++;
+				index = line.getX();
+			}
+			index += each.getWidth(g);
+		}
+		return new SP(index, row+(wrap*line.getHeight()));
 	}
 	
 	public void setBlinkerColor(Color c) {
@@ -148,6 +167,8 @@ public class TextArea extends UIObject {
 
 	public void addLine(List<TextBit> bits) {
 		BitLine line = new BitLine(new Transform(0, 0), g);
+		line.setMaxWidth(width-paddingRight);
+		line.setWrap(wrap);
 		byte b;
 		int i;
 		for (i = bits.size(), b = 0; b < i;) {
@@ -273,34 +294,29 @@ public class TextArea extends UIObject {
 	public void onType(KeyEvent e) {
 		if(lines.size() == 0) {
 			lines.add(new BitLine(transform, g));
-			rationalizeCursor();
+			bindCursor();
 		}
 		if(e.getKeyChar() == KeyEvent.VK_ENTER) {
 			addLine(new ArrayList<TextBit>());
 			cursorRow++;
-			rationalizeCursor();
+			bindCursor();
 			return;
 		}
-		if(e.getKeyChar() == KeyEvent.VK_BACK_SPACE) {//Need to do backspaces, verify newlines, and work on arrow keys for navigation. 
-			//Also add padding, use index to insert text, and add bitformat settings to this area.///////////////////////////////////////////////////////////////////
+		if(e.getKeyChar() == KeyEvent.VK_BACK_SPACE) {
 			if(lines.get(cursorRow).getBits().size() == 0) {
 				return;
 			}
 			lines.get(cursorRow).getBits().remove(cursorCol-1);
-			rationalizeCursor();
+			bindCursor();
 			return;
 		}
 		
-		lines.get(cursorRow).addBit(new TextBit(e.getKeyChar()+"", new BitFormat(Color.LIGHT_GRAY)), cursorCol);
-		cursorCol++;
-		/*if(lines.get(lines.size()).getWidth() >= width-50) {
-			System.out.println("Too long");
-		}else {
-			lines.get(lines.size()).addBit(new TextBit(paramKeyEvent.getKeyChar()+"", new BitFormat()));
-		}*/
+		if(lines.get(cursorRow).addBit(new TextBit(e.getKeyChar()+"", new BitFormat(Color.LIGHT_GRAY)), cursorCol)) {
+			cursorCol++;
+		}
 	}
 	
-	private void rationalizeCursor() {
+	private void bindCursor() {
 		if(cursorRow < 0) {
 			cursorRow = 0;
 		}else if(cursorRow > lines.size()) {
@@ -318,24 +334,18 @@ public class TextArea extends UIObject {
 	public void onKeyPressed(KeyEvent e) {
 		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
 			cursorCol--;
-			rationalizeCursor();
-			return;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
 			cursorCol++;
-			rationalizeCursor();
-			return;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_UP) {
 			cursorRow--;
-			rationalizeCursor();
-			return;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_DOWN) {
 			cursorRow++;
-			rationalizeCursor();
-			return;
 		}
+		bindCursor();
+		return;
 	}
 
 	@Override

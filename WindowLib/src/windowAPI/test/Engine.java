@@ -55,23 +55,24 @@ public class Engine implements Runnable {
 
 	    Graphics g = bs.getDrawGraphics();
 
-	    try {
-	        if (g instanceof Graphics2D) {
-	            Graphics2D g2 = (Graphics2D) g;
-	            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-	            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	        }
+	    if (g instanceof Graphics2D) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
 
-	        // Clear the screen
-	        g.setColor(new Color(0, 100, 100));
-	        g.fillRect(0, 0, this.window.getWidth(), this.window.getHeight());
+        // Clear the screen
+        g.setColor(new Color(0, 100, 100));
+        g.fillRect(0, 0, this.window.getWidth(), this.window.getHeight());
 
-	        // Render everything in the registry
-	        window.getRegistry().render(g);
+        // Render everything in the registry
+        window.getRegistry().render(g);
 
-	    } finally {
-	    	g.dispose();
+	    g.dispose();
+	    try{
 	    	bs.show();
+	    } catch(IllegalStateException e) {
+	    	
 	    }
 	}
 	

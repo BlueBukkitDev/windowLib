@@ -14,23 +14,19 @@ import windowAPI.ui.geometry.Transform;
 public class BitLine {
 	private List<TextBit> bits = new ArrayList<>();
 	private List<TextBit> bufferedBits = new ArrayList<TextBit>();
+	//private List<List<TextBit>> rows = new ArrayList<List<TextBit>>();
 
 	private int x;
-
 	private int y;
-
 	private int index;
+	private int width;
+	private int height;
+	int maxWidth;
 	
 	private Graphics g;
-	
 	private Transform transform;
 
-	private int width;
-
-	private int height;
-	
-	private int maxWidth;
-	private boolean maxWidthSet = false;
+	boolean maxWidthSet = false;
 	private boolean wrap = false;
 
 	public BitLine(Transform transform, Graphics g) {
@@ -45,8 +41,8 @@ public class BitLine {
 		maxWidthSet = true;
 	}
 	
-	public void setWrap() {
-		wrap = true;
+	public void setWrap(boolean wrap) {
+		this.wrap = wrap;
 	}
 	
 	public int getSubWidth(int index) {
@@ -63,11 +59,45 @@ public class BitLine {
 		return width;
 	}
 
-	public void addBit(TextBit bit, int index) {
-		if (bit == null || bit.getS().length() <= 0) {
-			return;
+	/**
+	 *Returns true if successful, returns false if it could not add a bit. Reasons for this may 
+	 *include a null parameter, a bit of 0 length, or the line's maximum width being exceeded. 
+	 **/
+	public boolean addBit(TextBit bit, int index) {
+		if(bit == null) {
+			return false;
+		}
+		width += g.getFontMetrics().stringWidth(bit.s);
+		if(!canAddBit(bit)) {
+			width -= g.getFontMetrics().stringWidth(bit.s);
+			return false;
 		}
 		this.bits.add(index, bit);
+		adjustHeight();
+		return true;
+	}
+	
+	private boolean canAddBit(TextBit bit) {
+		if (bit.getS().length() <= 0) {
+			return false;
+		}
+		if(!isMax()) {
+			return true;
+		}
+		if(wrap) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean isMax() {
+		if(maxWidthSet && calculateWidth()+x >= maxWidth) {
+			return true;
+		}
+		return false;
+	}
+	
+	private void adjustHeight() {
 		int i = 0;
 		for (TextBit each : this.bits) {
 			int h = each.getHeight(g);
@@ -76,9 +106,6 @@ public class BitLine {
 		}
 		if (i > this.height)
 			this.height = i;
-		for(TextBit each:bits) {
-			width += g.getFontMetrics().stringWidth(each.s);
-		}
 	}
 	
 	public List<TextBit> getBits() {
@@ -94,10 +121,15 @@ public class BitLine {
 	 **/
 	public void render(Graphics g) {
 		this.index = this.x;
+		int line = 1;
 		for (TextBit each : this.bits) {
+			if(maxWidthSet && index > maxWidth) {
+				line++;
+				index = this.x;
+			}
 			g.setColor(each.getC());
 			g.setFont(each.getF());
-			g.drawString(each.getS(), this.index+transform.getX(), this.y+transform.getY()+this.height);
+			g.drawString(each.getS(), this.index+transform.getX(), this.y+transform.getY()+(this.height*line));
 			this.index += each.getWidth(g);
 		}
 	}
@@ -113,6 +145,14 @@ public class BitLine {
 	
 	public int getWidth() {
 		return width;
+	}
+	
+	public int calculateWidth() {
+		int wide = 0;
+		for (TextBit each : this.bits) {
+			wide += each.getWidth(g);
+		}
+		return wide;
 	}
 
 	public void setX(int x) {
