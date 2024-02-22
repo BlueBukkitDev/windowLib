@@ -5,9 +5,10 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 
-import windowAPI.Fonts;
 import windowAPI.ui.geometry.Transform;
+import windowAPI.ui.gfx.BitFormat;
 import windowAPI.ui.gfx.Pattern;
 
 public abstract class TextInputField extends InputField {
@@ -276,13 +277,13 @@ public abstract class TextInputField extends InputField {
 				if (message.contains("§")) {
 					TextBit[] bits = getBits(message);
 					if (bits != null) {
-						this.toWriteTo.addLine(bits);
+						this.toWriteTo.addLine(Arrays.asList(bits));
 						setText("");
 						prefix = "";
 						suffix = "";
 					}
 				} else {
-					this.toWriteTo.addLine(new TextBit[] { new TextBit(Color.BLACK, Fonts.plain, message, null, null) });
+					this.toWriteTo.addLine(Arrays.asList(new TextBit(message, new BitFormat())));
 					setText("");
 					prefix = "";
 					suffix = "";
@@ -304,50 +305,32 @@ public abstract class TextInputField extends InputField {
 		TextBit[] bits = new TextBit[parts.length];
 		for (int i = 1; i < parts.length; i++) {
 			TextBit bit;
-			String first = parts[i].split("")[0];
-			switch(first) {
-			case "a":bit = new TextBit(new Color(0, 255, 0), Fonts.plain, parts[i].substring(1), null, null);break;
-			case "b":bit = new TextBit(Color.CYAN, Fonts.plain, parts[i].substring(1), null, null);break;
-			case "c":bit = new TextBit(Color.RED, Fonts.plain, parts[i].substring(1), null, null);
-			case "d":bit = new TextBit(Color.PINK, Fonts.plain, parts[i].substring(1), null, null);
-			case "e":bit = new TextBit(Color.YELLOW, Fonts.plain, parts[i].substring(1), null, null);
-			case "f":bit = new TextBit(Color.WHITE, Fonts.plain, parts[i].substring(1), null, null);
-			case "0":bit = new TextBit(Color.BLACK, Fonts.plain, parts[i].substring(1), null, null);
-			case "1":bit = new TextBit(Color.BLUE, Fonts.plain, parts[i].substring(1), null, null);
-			case "2":bit = new TextBit(new Color(0, 80, 0), Fonts.plain, parts[i].substring(1), null, null);
-			case "3":bit = new TextBit(new Color(0, 80, 80), Fonts.plain, parts[i].substring(1), null, null);
-			case "4":bit = new TextBit(new Color(80, 0, 0), Fonts.plain, parts[i].substring(1), null, null);
-			case "5":bit = new TextBit(new Color(80, 0, 80), Fonts.plain, parts[i].substring(1), null, null);
-			case "6":bit = new TextBit(new Color(220, 220, 0), Fonts.plain, parts[i].substring(1), null, null);
-			case "7":bit = new TextBit(Color.GRAY, Fonts.plain, parts[i].substring(1), null, null);
-			case "8":bit = new TextBit(Color.DARK_GRAY, Fonts.plain, parts[i].substring(1), null, null);
-			case "9":bit = new TextBit(new Color(80, 0, 200), Fonts.plain, parts[i].substring(1), null, null);
-			case "l":{
-						if (i > 1) {
-							bit = new TextBit(bits[i - 1].getC(), Fonts.bold, parts[i].substring(1), null, null);
-						} else {
-							bit = new TextBit(Color.BLACK, Fonts.bold, parts[i].substring(1), null, null);
-						}
-					}
-			case "i":{
-						if (i > 1) {
-							bit = new TextBit(bits[i - 1].getC(), Fonts.italic, parts[i].substring(1), null, null);
-						} else {
-							bit = new TextBit(Color.BLACK, Fonts.italic, parts[i].substring(1), null, null);
-						}
-					}
-			case "r":bit = new TextBit(Color.BLACK, Fonts.plain, parts[i].substring(1), null, null);
-			default:{
-					if (i > 1) {
-						bit = new TextBit(bits[i - 1].getC(), bits[i - 1].getF(), parts[i], null, null);
-					} else {
-						bit = new TextBit(Color.BLACK, Fonts.plain, "§" + parts[i], null, null);
-					}
-				}
-			}
+			bit = new TextBit(parts[i].substring(1), new BitFormat(getColorFromChar(parts[i].charAt(0))));
 			bits[i] = bit;
 		}
 		return bits;
+	}
+	
+	private Color getColorFromChar(char c) {
+		switch(c) {
+		case 'a':return new Color(0, 255, 0);
+		case 'b':return Color.CYAN;
+		case 'c':return Color.RED;
+		case 'd':return Color.PINK;
+		case 'e':return Color.YELLOW;
+		case 'f':return Color.WHITE;
+		case 'g':return Color.BLACK;
+		case '0':return Color.BLUE;
+		case '1':return new Color(0, 80, 0);
+		case '2':return new Color(0, 80, 80);
+		case '3':return new Color(80, 0, 0);
+		case '4':return new Color(80, 0, 80);
+		case '5':return new Color(220, 220, 0);
+		case '6':return Color.GRAY;
+		case '7':return Color.DARK_GRAY;
+		case '8':return new Color(80, 0, 200);
+		default:return Color.BLACK;
+		}
 	}
 
 	private int getIndex(Point p) {
